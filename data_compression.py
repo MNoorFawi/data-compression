@@ -24,7 +24,7 @@ class CompressedAGE:
         self._compress(age)
         
     def _compress(self, age: str) -> None:
-        self.bit_string: int = 1 # start with sentinel
+        self.bit_string = 1 # start with sentinel
         self.minimum = min(list(age))
         self.pfor = [i - self.minimum for i in age]
         self.b_pfor = max([int(i).bit_length() for i in list(self.pfor)])
@@ -37,7 +37,7 @@ class CompressedAGE:
     def decompress(self) -> str:
         orig_num = ""
         for i in range(0, self.bit_string.bit_length() - 1, self.b_pfor): # - 1 to exclude sentinel
-            bits: int = self.bit_string >> i & int(str(0b1) * self.b_pfor, 2) # get just b_pfor relevant bits
+            bits = self.bit_string >> i & int(str(0b1) * self.b_pfor, 2) # get just b_pfor relevant bits
             orig_num += str(bits)[::-1]
             #orig_num += str(bits)
             orig_num += " "
@@ -51,7 +51,7 @@ class CompressedAGE:
 original = list(age)
 print("original age variable[0:10]:\n", original[0:10])
 print("original age is {} bytes".format(getsizeof(original)))
-compressed: CompressedAGE = CompressedAGE(original) # compress
+compressed = CompressedAGE(original) # compress
 print("compressed age is {} bytes".format(getsizeof(compressed.bit_string)))
 print("compressed age bit_string looks like: {}.....".format(
         str(compressed.bit_string)[0:40]))
@@ -76,7 +76,7 @@ class CompressedCLS:
         self._compress(cls)
         
     def _compress(self, cls: str) -> None:
-        self.bit_string: int = 1 # start with sentinel
+        self.bit_string = 1 # start with sentinel
         #for cl in cls.split():
         for cl in cls:
             self.bit_string <<= 2 # shift left two bits
@@ -88,9 +88,9 @@ class CompressedCLS:
                 raise ValueError("Invalid class:{}".format(cl))
 
     def decompress(self) -> str:
-        cls: str = ""
+        cls = ""
         for i in range(0, self.bit_string.bit_length() - 1, 2): # - 1 to exclude sentinel
-            bits: int = self.bit_string >> i & 0b11 # get just 2 relevant bits
+            bits = self.bit_string >> i & 0b11 # get just 2 relevant bits
             if bits == 0b00: # A
                 cls += "Good"[::-1] # backwards
             elif bits == 0b01: # C
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     original = list(cls)
     print("original class variable[0:10]:\n", original[0:10])
     print("original class is {} bytes".format(getsizeof(original)))
-    compressed: CompressedCLS = CompressedCLS(original) # compress
+    compressed = CompressedCLS(original) # compress
     print("compressed class is {} bytes".format(getsizeof(compressed.bit_string)))
     print("compressed class bit_string looks like: {}.....".format(
         str(compressed.bit_string)[0:40]))
