@@ -1,5 +1,8 @@
 # data-compression
-Compressing data using Python and compression algorithms for better data storage and transfer.
+
+Suppose you want to read large data into memory, store very big data into desk when you don’t have much space or even transfer data for example model predictions through api. 
+In such situations and in many others you will need data compression.
+Here I tried to use python and compression techniques to compress data of numeric and/or categorical variables for better data storage and transfer.
 
 ``` python
 python data_compression.py
