@@ -20,10 +20,10 @@ def space_saving(original, compressed):
 print("###### Compressing Age Variable:")
 
 class CompressedAGE:
-    def __init__(self, age: str):
+    def __init__(self, age):
         self._compress(age)
         
-    def _compress(self, age: str):
+    def _compress(self, age):
         self.bit_string = 1 # start with sentinel
         self.minimum = min(list(age))
         self.pfor = [i - self.minimum for i in age]
@@ -72,10 +72,10 @@ getsizeof(list(cls))
 print("###### Compressing Class Variable:")
 
 class CompressedCLS:
-    def __init__(self, cls: str):
+    def __init__(self, cls):
         self._compress(cls)
         
-    def _compress(self, cls: str):
+    def _compress(self, cls):
         self.bit_string = 1 # start with sentinel
         #for cl in cls.split():
         for cl in cls:
@@ -91,9 +91,9 @@ class CompressedCLS:
         cls = ""
         for i in range(0, self.bit_string.bit_length() - 1, 2): # - 1 to exclude sentinel
             bits = self.bit_string >> i & 0b11 # get just 2 relevant bits
-            if bits == 0b00: # A
+            if bits == 0b00: # Good
                 cls += "Good"[::-1] # backwards
-            elif bits == 0b01: # C
+            elif bits == 0b01: # Bad
                 cls += "Bad"[::-1]
             else:
                 raise ValueError("Invalid bits:{}".format(bits))
