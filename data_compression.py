@@ -20,10 +20,10 @@ def space_saving(original, compressed):
 print("###### Compressing Age Variable:")
 
 class CompressedAGE:
-    def __init__(self, age: str) -> None:
+    def __init__(self, age: str):
         self._compress(age)
         
-    def _compress(self, age: str) -> None:
+    def _compress(self, age: str):
         self.bit_string = 1 # start with sentinel
         self.minimum = min(list(age))
         self.pfor = [i - self.minimum for i in age]
@@ -34,7 +34,7 @@ class CompressedAGE:
             self.bit_string <<= self.b_pfor # shift left with maximum bits
             self.bit_string |= int(('{0:0%sb}' % self.b_pfor).format(int(num)), 2)
 
-    def decompress(self) -> List[int]:
+    def decompress(self):
         orig_num = ""
         for i in range(0, self.bit_string.bit_length() - 1, self.b_pfor): # - 1 to exclude sentinel
             bits = self.bit_string >> i & int(str(0b1) * self.b_pfor, 2) # get just b_pfor relevant bits
@@ -44,7 +44,7 @@ class CompressedAGE:
         orig_num = orig_num.rstrip()[::-1]
         return [int(i) + self.minimum for i in orig_num.split()]
     
-    def __str__(self) -> str: # string representation for pretty printing
+    def __str__(self): # string representation for pretty printing
         return " ".join(map(str, self.decompress()))
 
 
@@ -72,10 +72,10 @@ getsizeof(list(cls))
 print("###### Compressing Class Variable:")
 
 class CompressedCLS:
-    def __init__(self, cls: str) -> None:
+    def __init__(self, cls: str):
         self._compress(cls)
         
-    def _compress(self, cls: str) -> None:
+    def _compress(self, cls: str):
         self.bit_string = 1 # start with sentinel
         #for cl in cls.split():
         for cl in cls:
@@ -87,7 +87,7 @@ class CompressedCLS:
             else:
                 raise ValueError("Invalid class:{}".format(cl))
 
-    def decompress(self) -> List[str]:
+    def decompress(self):
         cls = ""
         for i in range(0, self.bit_string.bit_length() - 1, 2): # - 1 to exclude sentinel
             bits = self.bit_string >> i & 0b11 # get just 2 relevant bits
@@ -100,7 +100,7 @@ class CompressedCLS:
         #return cls[::-1] # [::-1] reverses string by slicing backward
         return re.sub(r"(\w)([A-Z])", r"\1 \2", cls[::-1]).split() # add space before upper letters
     
-    def __str__(self) -> str: # string representation for pretty printing
+    def __str__(self): # string representation for pretty printing
         return " ".join(map(str, self.decompress()))
 
 if __name__ == "__main__":
