@@ -34,7 +34,7 @@ class CompressedAGE:
             self.bit_string <<= self.b_pfor # shift left with maximum bits
             self.bit_string |= int(('{0:0%sb}' % self.b_pfor).format(int(num)), 2)
 
-    def decompress(self) -> str:
+    def decompress(self) -> List[int]:
         orig_num = ""
         for i in range(0, self.bit_string.bit_length() - 1, self.b_pfor): # - 1 to exclude sentinel
             bits = self.bit_string >> i & int(str(0b1) * self.b_pfor, 2) # get just b_pfor relevant bits
@@ -87,7 +87,7 @@ class CompressedCLS:
             else:
                 raise ValueError("Invalid class:{}".format(cl))
 
-    def decompress(self) -> str:
+    def decompress(self) -> List[str]:
         cls = ""
         for i in range(0, self.bit_string.bit_length() - 1, 2): # - 1 to exclude sentinel
             bits = self.bit_string >> i & 0b11 # get just 2 relevant bits
