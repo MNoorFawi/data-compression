@@ -76,29 +76,40 @@ class CompressedCLS:
         self._compress(cls)
         
     def _compress(self, cls):
+        self.keys = set(cls)
+        self.n = len(self.keys)
+        self.bins = []
+        for i in range(self.n):
+            self.bins += [i]
+            
+        self.bit_value = max([i.bit_length() for i in self.bins])    
+        self.dictionary = dict(zip(self.keys, self.bins))
+        
         self.bit_string = 1 # start with sentinel
         #for cl in cls.split():
         for cl in cls:
-            self.bit_string <<= 2 # shift left two bits
-            if cl == "Good": # change last two bits to 00
-                self.bit_string |= 0b00
-            elif cl == "Bad": # change last two bits to 01
-                self.bit_string |= 0b01
-            else:
-                raise ValueError("Invalid class:{}".format(cl))
+            self.bit_string <<= self.bit_value # shift left two bits
+            self.bit_string |= self.dictionary[cl]
+            #if cl == "Good": # change last two bits to 00
+            #    self.bit_string |= 0b00
+            #elif cl == "Bad": # change last two bits to 01
+            #    self.bit_string |= 0b01
+            #else:
+            #    raise ValueError("Invalid class:{}".format(cl))
 
     def decompress(self):
         cls = ""
-        for i in range(0, self.bit_string.bit_length() - 1, 2): # - 1 to exclude sentinel
-            bits = self.bit_string >> i & 0b11 # get just 2 relevant bits
-            if bits == 0b00: # Good
-                cls += "Good"[::-1] # backwards
-            elif bits == 0b01: # Bad
-                cls += "Bad"[::-1]
-            else:
-                raise ValueError("Invalid bits:{}".format(bits))
+        for i in range(0, self.bit_string.bit_length() - 1, self.bit_value): # - 1 to exclude sentinel
+            bits = self.bit_string >> i & int(str(0b1) * self.bit_value, 2) # get just bit relevant bits
+            cls += next((k for k, v in self.dictionary.items() if v == bits), None)[::-1]
+            #if bits == 0b00: # Good
+            #    cls += "Good"[::-1] # backwards
+            #elif bits == 0b01: # Bad
+            #    cls += "Bad"[::-1]
+            #else:
+            #    raise ValueError("Invalid bits:{}".format(bits))
         #return cls[::-1] # [::-1] reverses string by slicing backward
-        return re.sub(r"(\w)([A-Z])", r"\1 \2", cls[::-1]).split() # add space before upper letters
+        return re.sub(r"([A-Z])", r" \1", cls[::-1]).split() # add space before upper letters
     
     def __str__(self): # string representation for pretty printing
         return " ".join(map(str, self.decompress()))
