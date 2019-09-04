@@ -32,7 +32,8 @@ class CompressedAGE:
         self.pfor_str = " ".join(self.pfor_s)
         for num in self.pfor_str.split():
             self.bit_string <<= self.b_pfor # shift left with maximum bits
-            self.bit_string |= int(('{0:0%sb}' % self.b_pfor).format(int(num)), 2)
+            #self.bit_string |= int(('{0:0%sb}' % self.b_pfor).format(int(num)), 2)
+            self.bit_string |= int(num)
 
     def decompress(self):
         orig_num = ""
@@ -59,7 +60,7 @@ print("compressed age bit_string looks like: {}.....".format(
 print("decompressed age variable[0:10]:\n", compressed.decompress()[0:10])
 print("original and decompressed age are the same: {}".format(
     original == compressed.decompress()))
-print(space_saving(original, compressed))
+print(space_saving(original, compressed.bit_string))
 compressed_age = compressed.bit_string
 
 print("\n###############################################################\n") 
@@ -126,7 +127,7 @@ if __name__ == "__main__":
     #print(compressed) # decompress
     print("original and decompressed class are the same: {}".format(
         original == compressed.decompress()))
-    print(space_saving(original, compressed))
+    print(space_saving(original, compressed.bit_string))
     compressed_class = compressed.bit_string
 
 # import re
