@@ -151,3 +151,16 @@ print("compressed data is {} bytes".format(getsizeof(compressed_data)))
 print("")
 print(space_saving(original_data, compressed_data))
 
+########################################################
+### to operate on compressed data
+# sample_comp = int('1' + bin(compressed_J.bit_string)[3:][20:60], 2)
+
+# cls = ""
+# for i in range(0, sample_comp.bit_length() - 1, compressed_J.bit_value): # - 1 to exclude sentinel
+#     bits = sample_comp >> i & int(str(0b1) * compressed_J.bit_value, 2) #0b11 # get just 2 relevant bits
+            
+#     cls += next((k for k, v in compressed_J.dictionary.items() if int(v, 2) == bits), None)[::-1]
+            
+
+# re.sub(r"([A-Z])", r" \1", cls[::-1]).split()
+
