@@ -79,18 +79,20 @@ class CompressedCLS:
     def _compress(self, cls):
         self.keys = set(cls)
         self.n = len(self.keys)
-        self.bins = []
-        for i in range(self.n):
-            self.bins += [i]
-            
-        self.bit_value = max([i.bit_length() for i in self.bins])    
+        self.nrows = len(cls)
+        self.frequency = dict((x, cls.count(x)) for x in self.keys)
+        self.bins = list(range(self.n)) #[]
+        #for i in range(self.n):
+        #    self.bins += [i]
+        self.bit_value = max([i.bit_length() for i in self.bins]) 
+        self.bins = [('{0:0%sb}' % self.bit_value).format(int(num)) for num in self.bins]
         self.dictionary = dict(zip(self.keys, self.bins))
         
         self.bit_string = 1 # start with sentinel
         #for cl in cls.split():
         for cl in cls:
-            self.bit_string <<= self.bit_value # shift left two bits
-            self.bit_string |= self.dictionary[cl]
+            self.bit_string <<= self.bit_value # shift left bit_value bits
+            self.bit_string |= int(self.dictionary[cl], 2) #self.dictionary[cl]
             #if cl == "Good": # change last two bits to 00
             #    self.bit_string |= 0b00
             #elif cl == "Bad": # change last two bits to 01
@@ -102,7 +104,7 @@ class CompressedCLS:
         cls = ""
         for i in range(0, self.bit_string.bit_length() - 1, self.bit_value): # - 1 to exclude sentinel
             bits = self.bit_string >> i & int(str(0b1) * self.bit_value, 2) # get just bit relevant bits
-            cls += next((k for k, v in self.dictionary.items() if v == bits), None)[::-1]
+            cls += next((k for k, v in self.dictionary.items() if int(v, 2) == bits), None)[::-1]
             #if bits == 0b00: # Good
             #    cls += "Good"[::-1] # backwards
             #elif bits == 0b01: # Bad
