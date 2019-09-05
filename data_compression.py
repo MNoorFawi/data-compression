@@ -1,6 +1,10 @@
 import pandas as pd
 import re
 from sys import getsizeof
+import numpy as np
+from collections import Counter
+from  more_itertools import unique_everseen
+from itertools import accumulate
 
 data = pd.read_csv('german_credit.csv', sep = ',', header = 0)
 age = data['Age'] 
@@ -19,35 +23,75 @@ def space_saving(original, compressed):
 
 print("###### Compressing Age Variable:")
 
+# class CompressedAGE:
+#     def __init__(self, age):
+#         self._compress(age)
+        
+#     def _compress(self, age):
+#         self.bit_string = 1 # start with sentinel
+#         self.minimum = min(list(age))
+#         self.pfor = [i - self.minimum for i in age]
+#         self.b_pfor = max([int(i).bit_length() for i in list(self.pfor)])
+#         self.pfor_s = map(str, self.pfor)
+#         self.pfor_str = " ".join(self.pfor_s)
+#         for num in self.pfor_str.split():
+#             self.bit_string <<= self.b_pfor # shift left with maximum bits
+#             #self.bit_string |= int(('{0:0%sb}' % self.b_pfor).format(int(num)), 2)
+#             self.bit_string |= int(num)
+
+#     def decompress(self):
+#         orig_num = ""
+#         for i in range(0, self.bit_string.bit_length() - 1, self.b_pfor): # - 1 to exclude sentinel
+#             bits = self.bit_string >> i & int(str(0b1) * self.b_pfor, 2) # get just b_pfor relevant bits
+#             orig_num += str(bits)[::-1]
+#             #orig_num += str(bits)
+#             orig_num += " "
+#         orig_num = orig_num.rstrip()[::-1]
+#         return [int(i) + self.minimum for i in orig_num.split()]
+    
+#     def __str__(self): # string representation for pretty printing
+#         return " ".join(map(str, self.decompress()))
+
 class CompressedAGE:
     def __init__(self, age):
         self._compress(age)
         
     def _compress(self, age):
+        self.age_sorted = sorted(age, key = Counter(age).get, reverse = True)
+        self.set_age = list(unique_everseen(self.age_sorted))
+        self.bits = list(range(0, len(self.set_age)))
+        self.dictionary = dict(zip(self.set_age, self.bits))
+
+        self.x = [int(v).bit_length() for n in age for k, v in self.dictionary.items() if k == n]
+        self.bs = self.x[::-1]
+        self.x.append(0)
+        self.x = self.x[::-1]
+        self.x = list(accumulate(self.x[:-1]))
+
         self.bit_string = 1 # start with sentinel
-        self.minimum = min(list(age))
-        self.pfor = [i - self.minimum for i in age]
-        self.b_pfor = max([int(i).bit_length() for i in list(self.pfor)])
-        self.pfor_s = map(str, self.pfor)
-        self.pfor_str = " ".join(self.pfor_s)
-        for num in self.pfor_str.split():
-            self.bit_string <<= self.b_pfor # shift left with maximum bits
-            #self.bit_string |= int(('{0:0%sb}' % self.b_pfor).format(int(num)), 2)
-            self.bit_string |= int(num)
+        for num in age:
+            self.bit_string <<=  self.dictionary[num].bit_length() # shift left with maximum bits
+            self.bit_string |= self.dictionary[num]
 
     def decompress(self):
         orig_num = ""
-        for i in range(0, self.bit_string.bit_length() - 1, self.b_pfor): # - 1 to exclude sentinel
-            bits = self.bit_string >> i & int(str(0b1) * self.b_pfor, 2) # get just b_pfor relevant bits
-            orig_num += str(bits)[::-1]
-            #orig_num += str(bits)
+        for i, b in zip(self.x, self.bs):
+            bv = str(0b1) * b
+            if bv == '':
+                bv = 0b0
+            else:
+                bv = int(bv, 2)
+            #bv = int(str(0b1) * b, 2)
+            bits = self.bit_string >> i & bv # get just b_pfor relevant bits
+            orig_num += str(next((k for k, v in self.dictionary.items() if v == bits), None))
+            #orig_num += str(bits)#[::-1]
             orig_num += " "
-        orig_num = orig_num.rstrip()[::-1]
-        return [int(i) + self.minimum for i in orig_num.split()]
+        orig_num = orig_num.rstrip()
+
+        return [int(i) for i in orig_num.split()[::-1]]
     
     def __str__(self): # string representation for pretty printing
         return " ".join(map(str, self.decompress()))
-
 
 original = list(age)
 print("original age variable[0:10]:\n", original[0:10])
