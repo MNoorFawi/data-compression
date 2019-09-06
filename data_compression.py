@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 from sys import getsizeof
-import numpy as np
+#import numpy as np
 from collections import Counter
 from  more_itertools import unique_everseen
 from itertools import accumulate
@@ -62,18 +62,18 @@ class CompressedAGE:
         self.bits = list(range(0, len(self.set_age)))
         self.dictionary = dict(zip(self.set_age, self.bits))
 
-        self.x = [int(v).bit_length() for n in age for k, v in self.dictionary.items() if k == n]
-        self.bs = self.x[::-1]
-        self.x.append(0)
-        self.x = self.x[::-1]
-        self.x = list(accumulate(self.x[:-1]))
-
         self.bit_string = 1 # start with sentinel
         for num in age:
             self.bit_string <<=  self.dictionary[num].bit_length() # shift left with maximum bits
             self.bit_string |= self.dictionary[num]
 
     def decompress(self):
+        self.x = [int(v).bit_length() for n in age for k, v in self.dictionary.items() if k == n]
+        self.bs = self.x[::-1]
+        self.x.append(0)
+        self.x = self.x[::-1]
+        self.x = list(accumulate(self.x[:-1]))
+        
         orig_num = ""
         for i, b in zip(self.x, self.bs):
             bv = str(0b1) * b
