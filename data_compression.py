@@ -68,14 +68,14 @@ class CompressedAGE:
             self.bit_string |= self.dictionary[num]
 
     def decompress(self):
-        self.x = [int(v).bit_length() for n in age for k, v in self.dictionary.items() if k == n]
-        self.bs = self.x[::-1]
-        self.x.append(0)
-        self.x = self.x[::-1]
-        self.x = list(accumulate(self.x[:-1]))
+        x = [int(v).bit_length() for n in age for k, v in self.dictionary.items() if k == n]
+        bs = x[::-1]
+        x.append(0)
+        x = x[::-1]
+        x = list(accumulate(x[:-1]))
         
         orig_num = ""
-        for i, b in zip(self.x, self.bs):
+        for i, b in zip(x, bs):
             bv = str(0b1) * b
             if bv == '':
                 bv = 0b0
