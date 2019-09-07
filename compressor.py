@@ -106,3 +106,60 @@ class compressed_numeric:
         print('a sample from original data:\n', 'from', start, 'to', end)
         return " ".join(map(str, self.sampling(start, end)))
         
+class compressed_string:
+    def __init__(self, string):
+        self._compress(string)
+        
+    def _compress(self, string):
+        self.keys = set(string)
+        self.n = len(self.keys)
+        self.nrows = len(string)
+        self.frequency = dict((x, string.count(x)) for x in self.keys)
+        self.bins = list(range(self.n)) 
+        self.bit_value = max([i.bit_length() for i in self.bins]) 
+        self.bins = [('{0:0%sb}' % self.bit_value).format(int(num)) for num in self.bins]
+        self.dictionary = dict(zip(self.keys, self.bins))
+        
+        self.bit_integer = 1 
+        for cl in string:
+            self.bit_integer <<= self.bit_value
+            self.bit_integer |= int(self.dictionary[cl], 2)
+
+    def decompress(self):
+        orig_str = ""
+        for i in range(0, self.bit_integer.bit_length() - 1, self.bit_value):
+            bits = self.bit_integer >> i & int(str(0b1) * self.bit_value, 2)
+            orig_str += next((k for k, v in self.dictionary.items() if int(v, 2) == bits), None)[::-1]
+
+        return re.sub(r"([A-Z])", r" \1", orig_str[::-1]).split()
+    
+    def sampling(self, start, end):
+        starting_bit = start * self.bit_value
+        end_bit = end * self.bit_value
+        sample_comp = int('1' + bin(self.bit_integer)[3:][starting_bit:end_bit], 2)
+
+        sample_str = ""
+        for i in range(0, sample_comp.bit_length() - 1, self.bit_value):
+            bits = sample_comp >> i & int(str(0b1) * self.bit_value, 2)
+            sample_str += next((k for k, v in self.dictionary.items() if int(v, 2) == bits), None)[::-1]
+            
+        return re.sub(r"([A-Z])", r" \1", sample_str[::-1]).split()
+    
+    def info(self):
+        compressed_size = getsizeof(self.bit_integer)
+        number_of_bits = self.bit_integer.bit_length()
+        
+        print('Length of Original Data:', self.nrows)
+        print('Number of Unique Values in Data:', self.n)
+        print('Frequency of Each Unique Value:\n', self.frequency)
+        print('Bit Symbol assigned to each value:\n', self.dictionary)
+        print('Compressed Size:', compressed_size)
+        print('Number of Bits to Encode Data:', number_of_bits)
+    
+    def __str__(self):
+        start = random.randint(0, self.nrows - 1)
+        end = start + 10
+        print('a sample from original data:\n', 'from', start, 'to', end)
+        return " ".join(map(str, self.sampling(start, end)))
+
+    
