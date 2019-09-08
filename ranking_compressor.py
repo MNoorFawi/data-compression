@@ -6,6 +6,7 @@ from collections import Counter
 from  more_itertools import unique_everseen
 from itertools import accumulate
 import random
+from tqdm import tqdm
 
 def space_saving(original, compressed):
     return "space saving from original to compressed is {}%".format(
@@ -45,7 +46,7 @@ class compressed_numeric:
         self.original = " ".join(self.original)
 
         self.bit_integer = 1 
-        for num in numeric_data:
+        for num in tqdm(numeric_data):
             self.bit_integer <<=  len(self.dictionary[num]) #self.dictionary[num].bit_length() 
             self.bit_integer |= int(self.dictionary[num], 2)
 
@@ -59,7 +60,7 @@ class compressed_numeric:
         x = list(accumulate(x[:-1]))
         
         orig_num = ""
-        for i, b in zip(x, bs):
+        for i, b in tqdm(zip(x, bs)):
             bv = str(0b1) * b
             if bv == '':
                 bv = 0b0
@@ -149,13 +150,13 @@ class compressed_string:
         self.dictionary = dict(zip(self.keys, self.bins))
         
         self.bit_integer = 1 
-        for cl in string:
+        for cl in tqdm(string):
             self.bit_integer <<= self.bit_value
             self.bit_integer |= int(self.dictionary[cl], 2)
 
     def decompress(self):
         orig_str = ""
-        for i in range(0, self.bit_integer.bit_length() - 1, self.bit_value):
+        for i in tqdm(range(0, self.bit_integer.bit_length() - 1, self.bit_value)):
             bits = self.bit_integer >> i & int(str(0b1) * self.bit_value, 2)
             orig_str += next((k for k, v in self.dictionary.items() if int(v, 2) == bits), None)[::-1]
 
