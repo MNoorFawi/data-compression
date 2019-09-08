@@ -11,6 +11,27 @@ def space_saving(original, compressed):
     return "space saving from original to compressed is {}%".format(
         round((1 - (getsizeof(compressed) / getsizeof(original))) * 100), 2)
 
+def bits_clustering(lst, rng):
+    first_two = lst[:2]
+    first_two = [bin(first_two.index(i))[2:] for i in first_two]
+    rest = lst[2:]
+    no_div_by_2 = len(rest) % 2 != 0
+    last = []
+    if no_div_by_2:
+        last = rest[-1]
+        rest = rest[:-1]
+    bits = [rest[i:i+rng] for i in range(0, len(rest) - 1, rng)]
+    for i, b in enumerate(bits):
+        bits[i] = [bin(b.index(bn))[2:] for bn in b]
+    clusters = list(range(len(rest) - 1))
+    clusters = [bin(i)[2:] for i in clusters]
+    for k, v in zip(clusters, bits):
+        for i in v:
+            first_two.append(k + i)
+    if no_div_by_2:
+        first_two.append(bin(last)[2:])
+    return first_two
+
 class compressed_numeric:
     def __init__(self, numeric_data):
         self._compress(numeric_data)
@@ -18,19 +39,20 @@ class compressed_numeric:
     def _compress(self, numeric_data):
         self.num_sorted = sorted(numeric_data, key = Counter(numeric_data).get, reverse = True)
         self.set_num = list(unique_everseen(self.num_sorted))
-        self.bits = list(range(0, len(self.set_num)))
+        self.bits = bits_clustering(self.set_num, 2) #list(range(0, len(self.set_num)))
         self.dictionary = dict(zip(self.set_num, self.bits))
         self.original = map(str, numeric_data)
         self.original = " ".join(self.original)
 
         self.bit_integer = 1 
         for num in numeric_data:
-            self.bit_integer <<=  self.dictionary[num].bit_length() 
-            self.bit_integer |= self.dictionary[num]
+            self.bit_integer <<=  len(self.dictionary[num]) #self.dictionary[num].bit_length() 
+            self.bit_integer |= int(self.dictionary[num], 2)
 
     def decompress(self):
         numeric_data = [int(num) for num in self.original.split()]
-        x = [int(v).bit_length() for n in numeric_data for k, v in self.dictionary.items() if k == n]
+        #x = [int(v).bit_length() for n in numeric_data for k, v in self.dictionary.items() if k == n]
+        x = [len(v) for n in numeric_data for k, v in self.dictionary.items() if k == n]
         bs = x[::-1]
         x.append(0)
         x = x[::-1]
@@ -43,7 +65,9 @@ class compressed_numeric:
                 bv = 0b0
             else:
                 bv = int(bv, 2)
-            bits = self.bit_integer >> i & bv
+            bits = bin(self.bit_integer >> i & bv)[2:]
+            if bits in ['1', '0'] and b > 1:
+                bits = '0' + bits
             orig_num += str(next((k for k, v in self.dictionary.items() if v == bits), None))
             orig_num += " "
         orig_num = orig_num.rstrip()
@@ -52,7 +76,8 @@ class compressed_numeric:
     
     def sampling(self, start, end):
         numeric_data = [int(num) for num in self.original.split()]
-        x = [int(v).bit_length() for n in numeric_data[:end] for k, v in self.dictionary.items() if k == n]
+        #x = [int(v).bit_length() for n in numeric_data[:end] for k, v in self.dictionary.items() if k == n]
+        x = [len(v) for n in numeric_data[:end] for k, v in self.dictionary.items() if k == n]
         starting_bit = sum(x[:start]) 
         end_bit = starting_bit + sum(x[start:])
         
@@ -71,7 +96,9 @@ class compressed_numeric:
                 bv = 0b0
             else:
                 bv = int(bv, 2)
-            bits = sample_bits >> i & bv
+            bits = bin(sample_bits >> i & bv)[2:]
+            if bits in ['1', '0'] and b > 1:
+                bits = '0' + bits
             orig_num += str(next((k for k, v in self.dictionary.items() if v == bits), None))
             orig_num += " "
         orig_num = orig_num.rstrip()
@@ -101,6 +128,7 @@ class compressed_numeric:
         print('Number of Bits to Encode Data:', number_of_bits)
     
     def __str__(self):
+        numeric_data = [int(num) for num in self.original.split()]
         start = random.randint(0, len(numeric_data) - 1)
         end = start + 10
         print('a sample from original data:\n', 'from', start, 'to', end)
