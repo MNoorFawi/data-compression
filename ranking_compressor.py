@@ -1,4 +1,4 @@
-import pandas as pd
+#import pandas as pd
 import re
 from sys import getsizeof
 import numpy as np
@@ -45,10 +45,13 @@ class compressed_numeric:
         self.original = map(str, numeric_data)
         self.original = " ".join(self.original)
 
-        self.bit_integer = 1 
-        for num in tqdm(numeric_data):
-            self.bit_integer <<=  len(self.dictionary[num]) #self.dictionary[num].bit_length() 
-            self.bit_integer |= int(self.dictionary[num], 2)
+        #self.bit_integer = 1 
+        #for num in tqdm(numeric_data):
+        #    self.bit_integer <<=  len(self.dictionary[num]) #self.dictionary[num].bit_length() 
+        #    self.bit_integer |= int(self.dictionary[num], 2)
+        intermediate_string = [self.dictionary[num] for num in tqdm(numeric_data)]
+        intermediate_string = "".join(intermediate_string)
+        self.bit_integer = int("1" + intermediate_string, 2)
 
     def decompress(self):
         numeric_data = [int(num) for num in self.original.split()]
